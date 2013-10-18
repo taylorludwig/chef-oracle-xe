@@ -15,9 +15,9 @@ end
   end
 end
 
-template '/tmp/configure_oracle.sh' do 
-  source 'configure_oracle.sh.erb'
-  mode 0755
+template '/tmp/oracle_xe.rsp' do
+  source 'oracle_xe.rsp.erb'
+  mode 600
   variables :http_port => node[:oracle_xe][:http_port], :listener_port => node[:oracle_xe][:listener_port], :sysdba_password => node[:oracle_xe][:sysdba_password]
 end
 
@@ -69,7 +69,7 @@ bash 'fix /dev/shm problem' do
     rm /dev/shm -rf
     mkdir /dev/shm
     mount -t tmpfs shmfs -o size=2048m /dev/shm
-    sysctl kernel.shmmax=1073741824 
+    sysctl kernel.shmmax=1073741824
   }
 end
 
@@ -85,6 +85,6 @@ bash 'setup oracle user' do
 end
 
 execute 'configure_oracle' do
-  command '/tmp/configure_oracle.sh'
+  command '/etc/init.d/oracle-xe configure responseFile=/tmp/oracle_xe.rsp'
   action :run
 end
