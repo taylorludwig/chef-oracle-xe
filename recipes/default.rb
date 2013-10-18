@@ -70,7 +70,9 @@ bash 'fix /dev/shm problem' do
     mkdir /dev/shm
     mount -t tmpfs shmfs -o size=2048m /dev/shm
     sysctl kernel.shmmax=1073741824
+    touch /dev/shm/.shmfix
   }
+  creates '/dev/shm/.shmfix'
 end
 
 bash 'setup oracle user' do
