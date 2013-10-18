@@ -85,6 +85,7 @@ bash 'setup oracle user' do
 end
 
 execute 'configure_oracle' do
-  command '/etc/init.d/oracle-xe configure responseFile=/tmp/oracle_xe.rsp'
+  command '/etc/init.d/oracle-xe configure responseFile=/tmp/oracle_xe.rsp && touch /tmp/oracle_configured'
   action :run
+  creates '/tmp/oracle_configured'
 end
