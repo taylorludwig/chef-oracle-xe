@@ -91,3 +91,10 @@ execute 'configure_oracle' do
   action :run
   creates '/tmp/oracle_configured'
 end
+
+bash 'environment variables for oracle' do
+  code "echo '. /u01/app/oracle/product/11.2.0/xe/bin/oracle_env.sh' >> /home/vagrant/.profile && touch /home/vagrant/.oracle_environment_vars"
+  action :run
+  user 'vagrant'
+  creates '/home/vagrant/.oracle_environment_vars'
+end
