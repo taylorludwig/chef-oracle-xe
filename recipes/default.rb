@@ -80,10 +80,20 @@ bash 'setup oracle user' do
   cwd '/home/oracle'
   code %Q{
     echo "" >>./.profile
-    echo '. /u01/app/oracle/product/11.2.0/xe/bin/oracle_env.sh' >>./.profile
     touch ./.user_created
   }
   creates '/home/oracle/.user_created'
+end
+
+bash 'environment variables for oracle' do
+  user "root"
+  code <<-EOH
+    echo '. /u01/app/oracle/product/11.2.0/xe/bin/oracle_env.sh' >> /etc/profile
+    source /u01/app/oracle/product/11.2.0/xe/bin/oracle_env.sh
+    touch /home/oracle/.oracle_environment_vars
+  EOH
+  action :run
+  creates '/home/oracle/.oracle_environment_vars'
 end
 
 execute 'configure_oracle' do
@@ -92,9 +102,3 @@ execute 'configure_oracle' do
   creates '/home/oracle/.oracle_configured'
 end
 
-bash 'environment variables for oracle' do
-  code "echo '. /u01/app/oracle/product/11.2.0/xe/bin/oracle_env.sh' >> /home/vagrant/.profile && touch /home/vagrant/.oracle_environment_vars"
-  action :run
-  user 'vagrant'
-  creates '/home/vagrant/.oracle_environment_vars'
-end
