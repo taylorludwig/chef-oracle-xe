@@ -63,6 +63,11 @@ execute 'install oracle' do
   creates '/u01/app/oracle'
 end
 
+service "oracle-xe" do
+  action :nothing
+  supports :status => true, :start => true, :stop => true, :restart => true
+end
+
 bash 'fix /dev/shm problem' do
   code %Q{
     umount /dev/shm
@@ -73,6 +78,7 @@ bash 'fix /dev/shm problem' do
     touch /dev/shm/.shmfix
   }
   creates '/dev/shm/.shmfix'
+  notifies :restart, "service[oracle-xe]"
 end
 
 bash 'setup oracle user' do
