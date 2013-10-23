@@ -77,7 +77,7 @@ bash 'fix /dev/shm problem' do
     sysctl kernel.shmmax=1073741824
     touch /dev/shm/.shmfix
   }
-  creates '/dev/shm/.shmfix'
+  not_if { ::File.exists?('/dev/shm/.shmfix') }
   notifies :restart, "service[oracle-xe]"
 end
 
