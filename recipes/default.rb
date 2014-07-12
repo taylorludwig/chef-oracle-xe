@@ -43,7 +43,7 @@ execute 'create subsys' do
   creates '/var/lock/subsys'
 end
 
-cookbook_file '/etc/sysctl.d/60-oracle.conf ' do
+cookbook_file '/etc/sysctl.d/60-oracle.conf' do
   action :create
   source 'oracle.conf'
   mode 644
