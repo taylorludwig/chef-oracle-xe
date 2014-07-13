@@ -117,6 +117,15 @@ bash 'environment variables for oracle' do
   creates '/home/oracle/.oracle_environment_vars'
 end
 
+bash 'correct and reinstall service script' do
+  code %Q{
+    cat /etc/init.d/oracle-xe >> /tmp/oracle-xe
+    cp -f /tmp/oracle-xe /etc/init.d/oracle-xe
+    update-rc.d oracle-xe defaults 80 01
+  } 
+  not_if "head /etc/init.d/oracle-xe -n3 | grep INIT"
+end
+
 execute 'configure_oracle' do
   command '/etc/init.d/oracle-xe configure responseFile=/tmp/oracle_xe.rsp && touch /home/oracle/.oracle_configured'
   action :run
