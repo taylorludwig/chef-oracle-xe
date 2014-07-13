@@ -49,6 +49,12 @@ cookbook_file '/etc/sysctl.d/60-oracle.conf' do
   mode 644
 end
 
+execute 'backup chkconfig if exists' do
+  command 'mv /sbin/chkconfig /sbin/chkconfig.bak'
+  creates '/sbin/chkconfig.bak'
+  only_if "test -f /sbin/chkconfig"
+end
+
 cookbook_file '/sbin/chkconfig' do
   action :create
   source 'chkconfig'
@@ -61,6 +67,11 @@ execute 'install oracle' do
   cwd '/tmp'
   action :run
   creates '/u01/app/oracle'
+end
+
+execute 'restore chkconfig from backup' do
+  command 'mv -f /sbin/chkconfig.bak /sbin/chkconfig'
+  only_if "test -f /sbin/chkconfig.bak"
 end
 
 service "oracle-xe" do
