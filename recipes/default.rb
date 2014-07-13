@@ -84,8 +84,12 @@ bash 'fix /dev/shm problem' do
     umount /dev/shm
     rm /dev/shm -rf
     mkdir /dev/shm
-    mount -t tmpfs shmfs -o size=2048m /dev/shm
+    
+    echo -e 'shmfs\t/dev/shm\ttmpfs\tsize=2g\t0\t0\n' >> /etc/fstab
+    mount shmfs
+
     sysctl kernel.shmmax=1073741824
+
     touch /dev/shm/.shmfix
   }
   not_if { ::File.exists?('/dev/shm/.shmfix') }
