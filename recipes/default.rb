@@ -117,6 +117,11 @@ bash 'environment variables for oracle' do
   creates '/home/oracle/.oracle_environment_vars'
 end
 
+cookbook_file "/tmp/oracle-xe" do
+  source "oracle-xe-init-header"
+  mode 755
+end
+
 bash 'correct and reinstall service script' do
   code %Q{
     cat /etc/init.d/oracle-xe >> /tmp/oracle-xe
