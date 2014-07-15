@@ -43,10 +43,16 @@ execute 'create subsys' do
   creates '/var/lock/subsys'
 end
 
-cookbook_file '/etc/sysctl.d/60-oracle.conf ' do
+cookbook_file '/etc/sysctl.d/60-oracle.conf' do
   action :create
   source 'oracle.conf'
   mode 644
+end
+
+execute 'backup chkconfig if exists' do
+  command 'mv /sbin/chkconfig /sbin/chkconfig.bak'
+  creates '/sbin/chkconfig.bak'
+  only_if "test -f /sbin/chkconfig"
 end
 
 cookbook_file '/sbin/chkconfig' do
@@ -63,6 +69,11 @@ execute 'install oracle' do
   creates '/u01/app/oracle'
 end
 
+execute 'restore chkconfig from backup' do
+  command 'mv -f /sbin/chkconfig.bak /sbin/chkconfig'
+  only_if "test -f /sbin/chkconfig.bak"
+end
+
 service "oracle-xe" do
   action :nothing
   supports :status => true, :start => true, :stop => true, :restart => true
@@ -73,8 +84,12 @@ bash 'fix /dev/shm problem' do
     umount /dev/shm
     rm /dev/shm -rf
     mkdir /dev/shm
-    mount -t tmpfs shmfs -o size=2048m /dev/shm
+    
+    echo -e 'shmfs\t/dev/shm\ttmpfs\tsize=2g\t0\t0\n' >> /etc/fstab
+    mount shmfs
+
     sysctl kernel.shmmax=1073741824
+
     touch /dev/shm/.shmfix
   }
   not_if { ::File.exists?('/dev/shm/.shmfix') }
@@ -100,6 +115,20 @@ bash 'environment variables for oracle' do
   EOH
   action :run
   creates '/home/oracle/.oracle_environment_vars'
+end
+
+cookbook_file "/tmp/oracle-xe" do
+  source "oracle-xe-init-header"
+  mode 755
+end
+
+bash 'correct and reinstall service script' do
+  code %Q{
+    cat /etc/init.d/oracle-xe >> /tmp/oracle-xe
+    cp -f /tmp/oracle-xe /etc/init.d/oracle-xe
+    update-rc.d oracle-xe defaults 80 01
+  } 
+  not_if "head /etc/init.d/oracle-xe -n3 | grep INIT"
 end
 
 execute 'configure_oracle' do
